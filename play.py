@@ -1,5 +1,6 @@
 import term
 
+import array
 from io import StringIO
 from queue import Queue
 from threading import Barrier, Event
@@ -16,6 +17,12 @@ from sys import argv, stdout
 import av
 from PIL.Image import Image
 from pyaudio import PyAudio, paContinue, paAbort, paComplete, paFloat32
+
+def clamped_float32_samples(data: bytes) -> bytes:
+    peaks = array.array("f", data)
+    for i in range(len(peaks)):
+        peaks[i] = max(min(peaks[i], 1.0), -1.0)
+    return peaks.tobytes()
 
 def play_audio(
     filepath: str,
@@ -34,7 +41,7 @@ def play_audio(
                 return (bytes(), paComplete)
 
             data = bytes(frame.planes[0])
-            return (data, paContinue)
+            return (clamped_float32_samples(data), paContinue)
 
         # Setup Audio Decoder and Resampler
         audio_generator = container.decode(audio=0)
