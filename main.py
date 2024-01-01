@@ -123,6 +123,7 @@ def main(argc, argv) -> int:
         abort.set()
         audio_thread.join()
         term.clear_all()
+        term.set_cursor(1, 1)
     return 0
 
 
