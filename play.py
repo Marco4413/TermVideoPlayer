@@ -4,7 +4,7 @@ from io import StringIO
 from queue import Queue
 from threading import Barrier, Event
 from time import sleep, time
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 from sys import argv, stdout
 
 # Deps:
@@ -76,7 +76,8 @@ def play_audio(
 
 def play_video(
     filepath: str,
-    screen: term.ScreenBuffer = term.ScreenBuffer(0, 0),
+    origin_x: int = 1,
+    origin_y: int = 1,
     width: Optional[int] = None, height: Optional[int] = None,
     pixel_width: int = 2,
     sync: Optional[Union[Event, Barrier]] = None,
@@ -97,8 +98,6 @@ def play_video(
         elif height is None:
             height = int(width / aspect_ratio)
 
-        screen.resize(width, height, init=term.Pixel(pixel_ch, None, None))
-
         if ready is not None:
             ready.set() # We're ready
         if sync is not None:
@@ -117,18 +116,22 @@ def play_video(
                 # We're ahead so we wait to get to the current frame
                 sleep(frame.time-video_time)
 
-            # Write to term.ScreenBuffer the current frame
+            # Write to screen the current frame
             image: Image = frame.to_image(width=width, height=height)
+            last_bg = None
+            screen = StringIO()
+
+            term.set_cursor(origin_x, origin_y, screen)
             for y in range(height):
                 for x in range(width):
                     pixel = image.getpixel((x, y))
-                    screen.put_pixel(x, y, term.Pixel(
-                        pixel_ch,
-                        fg=None,
-                        bg=term.Color(pixel[0], pixel[1], pixel[2])
-                    ))
+                    # Don't change background if not necessary
+                    if last_bg != pixel:
+                        last_bg = pixel
+                        term.set_background_color(pixel[0], pixel[1], pixel[2], screen)
+                    screen.write(pixel_ch)
+                term.set_cursor(origin_x, origin_y + y, screen)
+            term.reset_background_color(screen)
 
             # Render in a single write to stdout
-            buf = StringIO()
-            screen.draw(buf)
-            stdout.write(buf.getvalue())
+            stdout.write(screen.getvalue())
