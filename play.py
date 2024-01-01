@@ -15,7 +15,7 @@ from sys import argv, stdout
 # $ pip install av pillow pyaudio
 import av
 from PIL.Image import Image
-from pyaudio import PyAudio, get_format_from_width, paContinue, paAbort, paComplete, paFloat32
+from pyaudio import PyAudio, paContinue, paAbort, paComplete, paFloat32
 
 def play_audio(
     filepath: str,
@@ -24,12 +24,17 @@ def play_audio(
     abort: Event = Event(),
     ):
     with av.open(filepath, mode="r") as container:
-        frame_queue = Queue()
+        audio_fifo = av.AudioFifo()
         def audio_callback(in_data, frame_count, time_info, status):
             if abort.is_set() or status != 0:
                 return (bytes(), paAbort)
-            frame = frame_queue.get()
-            return (frame, paContinue if len(frame) > 0 else paComplete)
+
+            frame = audio_fifo.read(frame_count)
+            if frame is None:
+                return (bytes(), paComplete)
+
+            data = bytes(frame.planes[0])
+            return (data, paContinue)
 
         # Setup Audio Decoder and Resampler
         audio_generator = container.decode(audio=0)
@@ -52,9 +57,9 @@ def play_audio(
         # Open Audio Stream
         pya_stream = pya.open(
             format=paFloat32,
-            channels=len(first_frame.layout.channels),
-            rate=first_frame.rate,
-            frames_per_buffer=first_frame.samples,
+            channels=len(audio_resampler.layout.channels),
+            rate=audio_resampler.rate,
+            #frames_per_buffer=first_frame.samples,
             stream_callback=audio_callback,
             output=True,
         )
@@ -63,9 +68,8 @@ def play_audio(
             if abort.is_set():
                 break
             frame_flt = audio_resampler.resample(frame)[0]
-            frame_data = bytes(frame_flt.planes[0])
-            frame_queue.put(frame_data)
-        frame_queue.put(bytes()) # End of playback
+            frame_flt.pts = None
+            audio_fifo.write(frame_flt)
 
         while pya_stream.is_active():
             sleep(1)
