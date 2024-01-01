@@ -4,7 +4,7 @@
 
 ## About
 
-This python script will let you play `ffmpeg`-readable videos on your terminal (with audio)!
+This Python script will let you play `ffmpeg`-readable videos on your terminal (with audio)!
 
 **This project is experimental**: I haven't tested all possible formats so some may not work.
 
