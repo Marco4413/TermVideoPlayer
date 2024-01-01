@@ -12,7 +12,6 @@ def play_audio_thread(*args, **kwargs):
         # No Audio
         if "ready" in kwargs:
             kwargs["ready"].set()
-        return
 
 def print_usage(program: str):
     print("Usage:")
