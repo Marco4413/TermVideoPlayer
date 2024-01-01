@@ -119,6 +119,8 @@ def main(argc, argv) -> int:
             ready=video_sync,
             abort=abort
         )
+    except KeyboardInterrupt:
+        pass
     finally:
         abort.set()
         audio_thread.join()
