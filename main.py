@@ -62,7 +62,7 @@ def main(argc, argv) -> int:
                     print("Invalid width value: '%s'" % (width_s,))
                     return 1
             
-            if len(pixel_width_s) >= 2:
+            if len(pixel_width_s) > 0:
                 try:
                     pixel_width = int(pixel_width_s)
                 except ValueError:
