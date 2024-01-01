@@ -25,6 +25,9 @@ Open `video.mp4`, set pixel width to 2 chars, and video height to 64 chars (keep
 Open `video.mp4`, set video width to 10 chars (keep aspect-ratio for height):
 - `$ python main.py video.mp4 10x`
 
+Open `video.mp4`, set video height to 10 chars (keep aspect-ratio for height), set origin to (6,3) and disable audio:
+- `$ python main.py video.mp4 x10@6o3 -noaudio`
+
 ## The audio stops playing
 
 If it stops playing, it means that it couldn't be processed fast enough.
