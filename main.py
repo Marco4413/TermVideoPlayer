@@ -175,18 +175,19 @@ def main(argc, argv) -> int:
         audio_thread.join()
     return 0
 
+def term_clear():
+    term.reset_background_color()
+    term.clear_all()
+    term.set_cursor(1, 1)
 
 if __name__ == "__main__":
     try:
         if main(len(argv), argv) == 0:
-            term.clear_all()
-            term.set_cursor(1, 1)
+            term_clear()
         else:
             print_usage(argv[0])
     except KeyboardInterrupt:
-        term.clear_all()
-        term.set_cursor(1, 1)
+        term_clear()
     except Exception:
-        term.clear_all()
-        term.set_cursor(1, 1)
+        term_clear()
         raise
