@@ -1,7 +1,6 @@
 import term
 
 from io import StringIO
-from os import path
 from queue import Queue
 from threading import Barrier, Event
 from time import sleep, time
@@ -15,7 +14,7 @@ from sys import argv, stdout
 # $ pip install av pillow pyaudio
 import av
 from PIL.Image import Image
-from pyaudio import PyAudio, get_format_from_width, paContinue, paAbort, paComplete, paOutputOverflow, paOutputUnderflow, paFloat32
+from pyaudio import PyAudio, get_format_from_width, paContinue, paAbort, paComplete, paFloat32
 
 def play_audio(
     filepath: str,
