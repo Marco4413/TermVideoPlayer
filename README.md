@@ -10,7 +10,17 @@ This python script will let you play `ffmpeg`-readable videos on your terminal (
 
 ## Usage
 
-`$ python main.py <path-to-video>`
+`$ python main.py <path-to-video> [[width_spec]x[height]]`
+- `width_spec`: `[width][:[pixel_width=2]]`
+  - `pixel_width`: default is 2
+
+### Examples
+
+Open `video.mp4`, set pixel width to 2 chars, and video height to 64 chars (keep aspect-ratio for width):
+- `$ python main.py video.mp4 :2x64`
+
+Open `video.mp4`, set video width to 10 chars (keep aspect-ratio for height):
+- `$ python main.py video.mp4 10x`
 
 ## The audio stops playing
 
