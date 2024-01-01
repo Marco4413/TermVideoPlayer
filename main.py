@@ -14,13 +14,17 @@ def play_audio_thread(*args, **kwargs):
             kwargs["ready"].set()
         return
 
-def main(argc, argv):
+def print_usage(program: str):
+    print("Usage:")
+    print("  `$ python %s <path-to-video> [[width_spec]x[height]] [...flags]`" % (program,))
+    print("    width_spec: [width][:[pixel_width]]")
+    print("      pixel_width: default is 2")
+    print("    flags:")
+    print("      -noaudio: disables audio playback")
+
+def main(argc, argv) -> int:
     if argc <= 1:
         print("No input file provided.")
-        print("Usage:")
-        print("  `$python %s <path-to-video> [[width_spec]x[height]]`" % (argv[0],))
-        print("    width_spec: [width][:[pixel_width]]")
-        print("      pixel_width: default is 2")
         return 1
     
     filepath = argv[1]
@@ -123,4 +127,5 @@ def main(argc, argv):
 
 
 if __name__ == "__main__":
-    main(len(argv), argv)
+    if main(len(argv), argv) != 0:
+        print_usage(argv[0])
