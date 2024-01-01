@@ -26,12 +26,10 @@ def play_audio(
     with av.open(filepath, mode="r") as container:
         frame_queue = Queue()
         def audio_callback(in_data, frame_count, time_info, status):
-            if abort.is_set():
+            if abort.is_set() or status != 0:
                 return (bytes(), paAbort)
-            try:
-                return (frame_queue.get(), paContinue if status == 0 else paAbort)
-            except StopIteration:
-                return (bytes(), paComplete)
+            frame = frame_queue.get()
+            return (frame, paContinue if len(frame) > 0 else paComplete)
 
         # Setup Audio Decoder and Resampler
         audio_generator = container.decode(audio=0)
@@ -67,6 +65,7 @@ def play_audio(
             frame_flt = audio_resampler.resample(frame)[0]
             frame_data = bytes(frame_flt.planes[0])
             frame_queue.put(frame_data)
+        frame_queue.put(bytes()) # End of playback
 
         while pya_stream.is_active():
             sleep(1)
