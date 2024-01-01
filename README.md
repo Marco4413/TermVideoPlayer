@@ -30,7 +30,7 @@ If it stops playing, it means that it couldn't be processed fast enough.
 
 ## Requirements
 
-This project was developed for Python 3.12
+This project was developed for Python 3.12 (it **should** also work on 3.8)
 
 You'll need an [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)-compatible terminal, and the following Python packages:
 - av (11.0.0)
@@ -38,3 +38,6 @@ You'll need an [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)-compatible
 - pyaudio (0.2.14)
 
 `$ pip install av pillow pyaudio`
+
+If you're on **Linux**, you must install `portaudio19-dev` before `pyaudio` through your distro's package manager:
+- Ubuntu: `$ sudo apt install portaudio19-dev`
