@@ -73,9 +73,21 @@ def main(argc, argv):
             except ValueError:
                 print("Invalid height value: '%s'" % (height_s,))
                 return 1
+    
+    flags = argv[3:]
+    no_audio = "-noaudio" in flags
 
     term.reset_background_color()
     term.clear_all()
+
+    if no_audio:
+        play_video(
+            filepath,
+            width=width,
+            height=height,
+            pixel_width=pixel_width
+        )
+        return 0
 
     audio_sync = Event()
     video_sync = Event()
