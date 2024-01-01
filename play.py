@@ -121,8 +121,8 @@ def play_video(
             last_bg = None
             screen = StringIO()
 
-            term.set_cursor(origin_x, origin_y, screen)
             for y in range(height):
+                term.set_cursor(origin_x, origin_y+y, screen)
                 for x in range(width):
                     pixel = image.getpixel((x, y))
                     # Don't change background if not necessary
@@ -130,7 +130,6 @@ def play_video(
                         last_bg = pixel
                         term.set_background_color(pixel[0], pixel[1], pixel[2], screen)
                     screen.write(pixel_ch)
-                term.set_cursor(origin_x, origin_y + y, screen)
             term.reset_background_color(screen)
 
             # Render in a single write to stdout
