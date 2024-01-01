@@ -5,6 +5,15 @@ from os import path
 from threading import Thread, Event
 from sys import argv, stdout
 
+def play_audio_thread(*args, **kwargs):
+    try:
+        play_audio(*args, **kwargs)
+    except IndexError:
+        # No Audio
+        if "ready" in kwargs:
+            kwargs["ready"].set()
+        return
+
 def main(argc, argv):
     if argc <= 1:
         print("No input file provided.")
@@ -74,7 +83,7 @@ def main(argc, argv):
 
     audio_thread = Thread(
         name="Thread-Audio",
-        target=play_audio,
+        target=play_audio_thread,
         args=(filepath,),
         kwargs={
             "sync": video_sync,
