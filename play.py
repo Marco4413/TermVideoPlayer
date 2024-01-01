@@ -74,7 +74,6 @@ def play_audio(
         pya_stream.stop_stream()
         pya_stream.close()
         pya.terminate()
-    abort.set()
 
 def play_video(
     filepath: str,
