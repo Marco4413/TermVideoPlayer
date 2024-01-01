@@ -11,7 +11,7 @@ This Python script will let you play `ffmpeg`-readable videos on your terminal (
 ## Usage
 
 `$ python main.py <path-to-video> [[width_spec]x[height]]`
-- `width_spec`: `[width][:[pixel_width=2]]`
+- `width_spec`: `[width][:[pixel_width]]`
   - `pixel_width`: default is 2
 
 ### Examples
