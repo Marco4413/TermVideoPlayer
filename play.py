@@ -4,6 +4,7 @@ from io import StringIO
 from queue import Queue
 from threading import Barrier, Event
 from time import sleep, time
+from typing import Optional, Union
 from sys import argv, stdout
 
 # Deps:
@@ -18,8 +19,8 @@ from pyaudio import PyAudio, get_format_from_width, paContinue, paAbort, paCompl
 
 def play_audio(
     filepath: str,
-    sync: Event|Barrier|None = None,
-    ready: Event|None = None,
+    sync: Optional[Union[Event, Barrier]] = None,
+    ready: Optional[Event] = None,
     abort: Event = Event(),
     ):
     with av.open(filepath, mode="r") as container:
@@ -78,10 +79,10 @@ def play_audio(
 def play_video(
     filepath: str,
     screen: term.ScreenBuffer = term.ScreenBuffer(0, 0),
-    width: int|None = None, height: int|None = None,
+    width: Optional[int] = None, height: Optional[int] = None,
     pixel_width: int = 2,
-    sync: Event|Barrier|None = None,
-    ready: Event|None = None,
+    sync: Optional[Union[Event, Barrier]] = None,
+    ready: Optional[Event] = None,
     abort: Event = Event()
     ):
     pixel_ch = " " * pixel_width

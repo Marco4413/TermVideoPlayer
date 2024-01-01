@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import TextIO, List
+from typing import List, Optional, TextIO
 from sys import stdout
 
 @dataclass
@@ -30,8 +30,8 @@ def clear_all(out: TextIO = stdout):
 @dataclass
 class Pixel:
     ch: str
-    fg: Color|None
-    bg: Color|None
+    fg: Optional[Color]
+    bg: Optional[Color]
 
     def default() -> Pixel:
         return Pixel(" ", None, None)
@@ -59,10 +59,10 @@ class ScreenBuffer:
         else:
             self.buffer = [init] * (self.width * self.height)
     
-    def get_pixel(self, x: int, y: int) -> Pixel|None:
+    def get_pixel(self, x: int, y: int) -> Optional[Pixel]:
         return self.buffer[y * self.width + x]
     
-    def put_pixel(self, x: int, y: int, p: Pixel|None):
+    def put_pixel(self, x: int, y: int, p: Optional[Pixel]):
         self.buffer[y * self.width + x] = p
 
     def draw(self, out: TextIO = stdout):
