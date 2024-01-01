@@ -170,16 +170,18 @@ def main(argc, argv) -> int:
             ready=video_sync,
             abort=abort
         )
-    except KeyboardInterrupt:
-        pass
     finally:
         abort.set()
         audio_thread.join()
-        term.clear_all()
-        term.set_cursor(1, 1)
     return 0
 
 
 if __name__ == "__main__":
-    if main(len(argv), argv) != 0:
-        print_usage(argv[0])
+    try:
+        if main(len(argv), argv) != 0:
+            print_usage(argv[0])
+    except KeyboardInterrupt:
+        pass
+    finally:
+        term.clear_all()
+        term.set_cursor(1, 1)
