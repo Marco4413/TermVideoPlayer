@@ -77,6 +77,7 @@ def main(argc, argv) -> int:
     arg_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin")
     arg_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: False)")
     arg_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: 1.0)")
+    arg_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: False)")
     opt = arg_parser.parse_args(argv[1:], namespace=argparse.Namespace())
 
     if not path.exists(opt.filepath):
@@ -87,6 +88,7 @@ def main(argc, argv) -> int:
     term_clear()
     try:
         play_file(opt)
+        if opt.block: input()
     except KeyboardInterrupt:
         term_clear()
     except:
