@@ -9,6 +9,7 @@ from time import sleep
 from sys import argv, stdout
 
 import av
+import pyaudio
 
 def play_audio_thread(*args, ready: Event, abort: Event, **kwargs):
     try:
@@ -43,6 +44,7 @@ def play_file(opt: argparse.Namespace):
         args=(opt.filepath,),
         kwargs={
             "volume": opt.volume,
+            "output_device": opt.audio_device,
             "sync": video_sync,
             "ready": audio_sync,
             "abort": abort
@@ -71,6 +73,16 @@ def term_clear():
     term.clear_all()
     term.set_cursor(1, 1)
 
+def print_audio_output_devices():
+    pya = pyaudio.PyAudio()
+    default_output_device = pya.get_default_output_device_info()
+    for i in range(pya.get_device_count()):
+        device = pya.get_device_info_by_index(i)
+        if device["maxOutputChannels"] > 0:
+            is_default = default_output_device["index"] == device["index"]
+            print(f"{device['index']}{' (default) ' if is_default else ' '}- {device['name']}")
+    pya.terminate()
+
 def main(argc, argv) -> int:
     arg_parser = argparse.ArgumentParser(
         prog=argv[0],
@@ -78,17 +90,32 @@ def main(argc, argv) -> int:
         allow_abbrev=False,
     )
 
+    arg_subparsers = arg_parser.add_subparsers(required=True)
+
     av_log_levels = [ "PANIC", "FATAL", "ERROR", "WARNING", "INFO", "VERBOSE", "DEBUG" ]
-    arg_parser.add_argument("filepath", help="the video file to open")
-    arg_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
-    arg_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin (default '1p1')")
-    arg_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: False)")
-    arg_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: 1.0)")
-    arg_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: False)")
-    arg_parser.add_argument("-l", "--loop", type=int, metavar="N", default=0, help="loops N times. if N < 0 loops indefinitely (default: 0)")
-    arg_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: 0.0)")
-    arg_parser.add_argument("--log-level", choices=av_log_levels, default="ERROR", help="av log level (default: 'ERROR')")
+    play_parser = arg_subparsers.add_parser("play", help="plays the specified file", description="Plays the specified file.")
+    play_parser.add_argument("filepath", help="the video file to play")
+    play_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
+    play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin (default 1p1)")
+    play_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: %(default)s)")
+    play_parser.add_argument("-ad", "--audio-device", type=int, metavar="DEVICE_INDEX", help=f"selects the audio playback device (use `{arg_parser.prog} list-audio` to print output devices)")
+    play_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: %(default)s)")
+    play_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: %(default)s)")
+    play_parser.add_argument("-l", "--loop", type=int, metavar="N", default=0, help="loops N times. if N < 0 loops indefinitely (default: %(default)s)")
+    play_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: %(default)s)")
+    play_parser.add_argument("--log-level", choices=av_log_levels, default="ERROR", help="av log level (default: %(default)s)")
+    play_parser.set_defaults(command="play")
+
+    arg_subparsers.add_parser(
+        "print-audio",
+        help="prints all available output devices",
+        description="Prints all available output devices."
+    ).set_defaults(command="print-audio")
+
     opt = arg_parser.parse_args(argv[1:], namespace=argparse.Namespace())
+    if opt.command == "print-audio":
+        print_audio_output_devices()
+        return 0
 
     av.logging.set_level(getattr(av.logging, opt.log_level))
 
