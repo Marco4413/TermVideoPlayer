@@ -5,7 +5,7 @@ from io import StringIO
 from queue import Queue
 from threading import Barrier, Event
 from time import sleep, time
-from typing import Optional, Tuple, Union
+from typing import Optional, TextIO, Tuple, Union
 from sys import argv, stdout
 
 # Deps:
@@ -25,7 +25,7 @@ def clamp_float32_samples_and_set_volume(data: bytes, volume: float = 1.0) -> by
     return peaks.tobytes()
 
 def play_audio(
-    filepath: str,
+    filepath: str, *,
     volume: float = 1.0,
     sync: Optional[Union[Event, Barrier]] = None,
     ready: Optional[Event] = None,
@@ -105,7 +105,7 @@ def write_image(image: Image, origin_x: int, origin_y: int, pixel_ch: str, *, ou
     out.write(screen.getvalue())
 
 def play_video(
-    filepath: str,
+    filepath: str, *,
     origin_x: int = 1,
     origin_y: int = 1,
     width: Optional[int] = None, height: Optional[int] = None,
