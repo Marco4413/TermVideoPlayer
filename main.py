@@ -36,6 +36,7 @@ def play_file(opt: argparse.Namespace):
         target=play_audio_thread,
         args=(opt.filepath,),
         kwargs={
+            "volume": opt.volume,
             "sync": video_sync,
             "ready": audio_sync,
             "abort": abort
@@ -75,6 +76,7 @@ def main(argc, argv) -> int:
     arg_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
     arg_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin")
     arg_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: False)")
+    arg_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: 1.0)")
     opt = arg_parser.parse_args(argv[1:], namespace=argparse.Namespace())
 
     if not path.exists(opt.filepath):
