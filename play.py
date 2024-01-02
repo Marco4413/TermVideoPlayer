@@ -56,37 +56,38 @@ def play_audio(
         )
 
         pya = PyAudio()
+        try:
+            # Sync with other threads
+            if ready is not None:
+                ready.set() # We're ready
+            if sync is not None:
+                sync.wait() # Wait for sync
 
-        # Sync with other threads
-        if ready is not None:
-            ready.set() # We're ready
-        if sync is not None:
-            sync.wait() # Wait for sync
+            # Open Audio Stream
+            pya_stream = pya.open(
+                format=paFloat32,
+                channels=len(audio_resampler.layout.channels),
+                rate=audio_resampler.rate,
+                #frames_per_buffer=first_frame.samples,
+                stream_callback=audio_callback,
+                output_device_index=output_device,
+                output=True,
+            )
 
-        # Open Audio Stream
-        pya_stream = pya.open(
-            format=paFloat32,
-            channels=len(audio_resampler.layout.channels),
-            rate=audio_resampler.rate,
-            #frames_per_buffer=first_frame.samples,
-            stream_callback=audio_callback,
-            output_device_index=output_device,
-            output=True,
-        )
+            for frame in audio_generator:
+                if abort.is_set():
+                    break
+                frame_flt = audio_resampler.resample(frame)[0]
+                frame_flt.pts = None
+                audio_fifo.write(frame_flt)
 
-        for frame in audio_generator:
-            if abort.is_set():
-                break
-            frame_flt = audio_resampler.resample(frame)[0]
-            frame_flt.pts = None
-            audio_fifo.write(frame_flt)
+            while pya_stream.is_active():
+                sleep(1)
 
-        while pya_stream.is_active():
-            sleep(1)
-
-        pya_stream.stop_stream()
-        pya_stream.close()
-        pya.terminate()
+            pya_stream.stop_stream()
+            pya_stream.close()
+        finally:
+            pya.terminate()
 
 def write_image(image: Image, origin_x: int, origin_y: int, pixel_ch: str, *, out: TextIO = stdout):
     last_bg = None
