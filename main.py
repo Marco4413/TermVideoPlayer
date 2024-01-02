@@ -15,6 +15,8 @@ def play_audio_thread(*args, **kwargs):
         play_audio(*args, **kwargs)
     except IndexError:
         # No Audio
+        pass
+    finally:
         if "ready" in kwargs:
             kwargs["ready"].set()
 
