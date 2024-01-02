@@ -5,6 +5,7 @@ from play import play_audio, play_video
 import argparse
 from os import path
 from threading import Thread, Event
+from time import sleep
 from sys import argv, stdout
 
 import av
@@ -81,6 +82,8 @@ def main(argc, argv) -> int:
     arg_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: False)")
     arg_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: 1.0)")
     arg_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: False)")
+    arg_parser.add_argument("-l", "--loop", type=int, metavar="N", default=0, help="loops N times. if N < 0 loops indefinitely (default: 0)")
+    arg_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: 0.0)")
     arg_parser.add_argument("--log-level", choices=av_log_levels, default="ERROR", help="av log level (default: 'ERROR')")
     opt = arg_parser.parse_args(argv[1:], namespace=argparse.Namespace())
 
@@ -93,12 +96,20 @@ def main(argc, argv) -> int:
 
     term_clear()
     try:
-        play_file(opt)
+        play_file(opt) # Play once at start
+        while opt.loop != 0:
+            # If any loop is needed, loop
+            opt.loop -= 1
+            if opt.loop_wait > 0:
+                sleep(opt.loop_wait)
+            play_file(opt)
         if opt.block: input()
     except KeyboardInterrupt:
-        term_clear()
+        pass
     except:
         raise
+    finally:
+        term_clear()
     return 0
 
 if __name__ == "__main__":
