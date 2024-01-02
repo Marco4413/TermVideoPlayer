@@ -12,7 +12,9 @@ This Python script will let you play `ffmpeg`-readable videos on your terminal (
 
 `$ python main.py --help`
 
-Usage is explained within the help prompt.
+`$ python main.py play --help`
+
+Usage is explained within the help prompts.
 
 ### Examples
 
