@@ -80,7 +80,7 @@ def main(argc, argv) -> int:
     av_log_levels = [ "PANIC", "FATAL", "ERROR", "WARNING", "INFO", "VERBOSE", "DEBUG" ]
     arg_parser.add_argument("filepath", help="the video file to open")
     arg_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
-    arg_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin")
+    arg_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin (default '1p1')")
     arg_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: False)")
     arg_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: 1.0)")
     arg_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: False)")
