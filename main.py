@@ -10,15 +10,16 @@ from sys import argv, stdout
 
 import av
 
-def play_audio_thread(*args, **kwargs):
+def play_audio_thread(*args, ready: Event, abort: Event, **kwargs):
     try:
-        play_audio(*args, **kwargs)
+        play_audio(*args, ready=ready, abort=abort, **kwargs)
     except IndexError:
         # No Audio
         pass
+    except:
+        abort.set()
     finally:
-        if "ready" in kwargs:
-            kwargs["ready"].set()
+        ready.set()
 
 def play_file(opt: argparse.Namespace):
     if opt.no_audio:
