@@ -24,11 +24,11 @@ def play_file(opt: argparse.Namespace):
     if opt.no_audio:
         play_video(
             opt.filepath,
-            origin_x=opt.origin.x or 1,
-            origin_y=opt.origin.y or 1,
+            origin_x=opt.origin.x,
+            origin_y=opt.origin.y,
             width=opt.res.width,
             height=opt.res.height,
-            pixel_width=opt.res.pixel_width or 2
+            pixel_width=opt.res.pixel_width
         )
         return
 
