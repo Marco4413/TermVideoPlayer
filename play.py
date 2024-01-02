@@ -27,6 +27,7 @@ def clamp_float32_samples_and_set_volume(data: bytes, volume: float = 1.0) -> by
 def play_audio(
     filepath: str, *,
     volume: float = 1.0,
+    output_device: Optional[int] = None,
     sync: Optional[Union[Event, Barrier]] = None,
     ready: Optional[Event] = None,
     abort: Event = Event(),
@@ -69,6 +70,7 @@ def play_audio(
             rate=audio_resampler.rate,
             #frames_per_buffer=first_frame.samples,
             stream_callback=audio_callback,
+            output_device_index=output_device,
             output=True,
         )
 
