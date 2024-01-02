@@ -86,12 +86,31 @@ def play_audio(
         pya_stream.close()
         pya.terminate()
 
+def write_image(image: Image, origin_x: int, origin_y: int, pixel_ch: str, *, out: TextIO = stdout):
+    last_bg = None
+    screen = StringIO()
+
+    for y in range(image.height):
+        term.set_cursor(origin_x, origin_y+y, screen)
+        for x in range(image.width):
+            pixel = image.getpixel((x, y))
+            # Don't change background if not necessary
+            if last_bg != pixel:
+                last_bg = pixel
+                term.set_background_color(pixel[0], pixel[1], pixel[2], screen)
+            screen.write(pixel_ch)
+    term.reset_background_color(screen)
+
+    # Render in a single write to out
+    out.write(screen.getvalue())
+
 def play_video(
     filepath: str,
     origin_x: int = 1,
     origin_y: int = 1,
     width: Optional[int] = None, height: Optional[int] = None,
     pixel_width: int = 2,
+    out: TextIO = stdout,
     sync: Optional[Union[Event, Barrier]] = None,
     ready: Optional[Event] = None,
     abort: Event = Event()
@@ -109,6 +128,12 @@ def play_video(
             width = int(height * aspect_ratio)
         elif height is None:
             height = int(width / aspect_ratio)
+
+        # Print first frame (required to display images)
+        write_image(
+            first_frame.to_image(width=width, height=height), 
+            origin_x, origin_y, pixel_ch, out=out
+        )
 
         if ready is not None:
             ready.set() # We're ready
@@ -128,21 +153,6 @@ def play_video(
                 # We're ahead so we wait to get to the current frame
                 sleep(frame.time-video_time)
 
-            # Write to screen the current frame
+            # Write the current frame
             image: Image = frame.to_image(width=width, height=height)
-            last_bg = None
-            screen = StringIO()
-
-            for y in range(height):
-                term.set_cursor(origin_x, origin_y+y, screen)
-                for x in range(width):
-                    pixel = image.getpixel((x, y))
-                    # Don't change background if not necessary
-                    if last_bg != pixel:
-                        last_bg = pixel
-                        term.set_background_color(pixel[0], pixel[1], pixel[2], screen)
-                    screen.write(pixel_ch)
-            term.reset_background_color(screen)
-
-            # Render in a single write to stdout
-            stdout.write(screen.getvalue())
+            write_image(image, origin_x, origin_y, pixel_ch, out=out)
