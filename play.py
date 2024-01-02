@@ -18,14 +18,15 @@ import av
 from PIL.Image import Image
 from pyaudio import PyAudio, paContinue, paAbort, paComplete, paFloat32
 
-def clamped_float32_samples(data: bytes) -> bytes:
+def clamp_float32_samples_and_set_volume(data: bytes, volume: float = 1.0) -> bytes:
     peaks = array.array("f", data)
     for i in range(len(peaks)):
-        peaks[i] = max(min(peaks[i], 1.0), -1.0)
+        peaks[i] = max(min(peaks[i] * volume, 1.0), -1.0)
     return peaks.tobytes()
 
 def play_audio(
     filepath: str,
+    volume: float = 1.0,
     sync: Optional[Union[Event, Barrier]] = None,
     ready: Optional[Event] = None,
     abort: Event = Event(),
@@ -41,7 +42,7 @@ def play_audio(
                 return (bytes(), paComplete)
 
             data = bytes(frame.planes[0])
-            return (clamped_float32_samples(data), paContinue)
+            return (clamp_float32_samples_and_set_volume(data, volume), paContinue)
 
         # Setup Audio Decoder and Resampler
         audio_generator = container.decode(audio=0)
