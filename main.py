@@ -1,6 +1,8 @@
+import args
 import term
 from play import play_audio, play_video
 
+import argparse
 from os import path
 from threading import Thread, Event
 from sys import argv, stdout
@@ -13,134 +15,17 @@ def play_audio_thread(*args, **kwargs):
         if "ready" in kwargs:
             kwargs["ready"].set()
 
-def print_usage(program: str):
-    print("Usage:")
-    print(f"  `$ python {program} <path-to-video> [[width_spec]x[height][@[origin]] [...flags]`")
-    print( "    width_spec: [width][:[pixel_width]]")
-    print( "      pixel_width: default is 2")
-    print( "    origin: [x]o[y]")
-    print( "    flags:")
-    print( "      -noaudio: disables audio playback")
-
-def parse_width_spec(width_spec, width=None, pixel_width=None):
-    width_comp = width_spec.split(":")
-    width_s = width_comp[0]
-    pixel_width_s = ""
-
-    if len(width_comp) == 2:
-        pixel_width_s = width_comp[1]
-    elif len(width_comp) > 2:
-        print(f"Invalid width spec: '{width_spec}'")
-        return (False, width, pixel_width)
-
-    if len(width_s) > 0:
-        try:
-            width = int(width_s)
-        except ValueError:
-            print("Invalid width value: '{width_s}'")
-            return (False, width, pixel_width)
-    
-    if len(pixel_width_s) > 0:
-        try:
-            pixel_width = int(pixel_width_s)
-        except ValueError:
-            print("Invalid pixel width value: '{pixel_width_s}'")
-            return (False, width, pixel_width)
-        if pixel_width < 1:
-            print("Pixel width can't be < 1.")
-            return (False, width, pixel_width)
-
-    return (True, width, pixel_width)
-
-def parse_size(size, width=None, pixel_width=None, height=None):
-    size_comp = size.split("x")
-    if len(size_comp) != 2:
-        print(f"Invalid size: '{size}'")
-        return (False, width, pixel_width, height)
-    
-    [width_spec, height_s] = size_comp
-    (ok, width, pixel_width) = parse_width_spec(width_spec, width=width, pixel_width=pixel_width)
-    if not ok: return (False, width, pixel_width, height)
-
-    if len(height_s) > 0:
-        try:
-            height = int(height_s)
-        except ValueError:
-            print(f"Invalid height value: '{height_s}'")
-            return (False, width, pixel_width, height)
-
-    return (True, width, pixel_width, height)
-
-def parse_origin(origin, origin_x=None, origin_y=None):
-    origin_comp = origin.split("o")
-    if len(origin_comp) != 2:
-        print(f"Invalid origin: '{origin}'")
-        return (False, origin_x, origin_y)
-
-    [origin_x_s, origin_y_s] = origin_comp
-
-    if len(origin_x_s) > 0:
-        try:
-            origin_x = int(origin_x_s)
-        except ValueError:
-            print("Invalid origin x value: '{origin_x_s}'")
-            return (False, origin_x, origin_y)
-
-    if len(origin_y_s) > 0:
-        try:
-            origin_y = int(origin_y_s)
-        except ValueError:
-            print("Invalid origin y value: '{origin_y_s}'")
-            return (False, origin_x, origin_y)
-
-    return (True, origin_x, origin_y)
-
-def main(argc, argv) -> int:
-    if argc <= 1:
-        print("No input file provided.")
-        return 1
-    
-    filepath = argv[1]
-    if not path.exists(filepath):
-        print(f"No file '{filepath}' found.")
-        return 1
-    
-    width = None
-    height = None
-    pixel_width = 2
-    origin_x = 1
-    origin_y = 1
-
-    if argc >= 3:
-        transform = argv[2]
-        transform_comp = transform.split("@")
-
-        (ok, width, pixel_width, height) = parse_size(transform_comp[0], width=width, pixel_width=pixel_width, height=height)
-        if not ok: return 1
-        
-        if len(transform_comp) == 2:
-            (ok, origin_x, origin_y) = parse_origin(transform_comp[1], origin_x=origin_x, origin_y=origin_y)
-            if not ok: return 1
-        elif len(transform_comp) > 2:
-            print(f"Invalid transform: '{transform}'")
-            return 1
-    
-    flags = argv[3:]
-    no_audio = "-noaudio" in flags
-
-    term.reset_background_color()
-    term.clear_all()
-
-    if no_audio:
+def play_file(opt: argparse.Namespace):
+    if opt.no_audio:
         play_video(
-            filepath,
-            origin_x=origin_x,
-            origin_y=origin_y,
-            width=width,
-            height=height,
-            pixel_width=pixel_width
+            opt.filepath,
+            origin_x=opt.origin.x or 1,
+            origin_y=opt.origin.y or 1,
+            width=opt.res.width,
+            height=opt.res.height,
+            pixel_width=opt.res.pixel_width or 2
         )
-        return 0
+        return
 
     audio_sync = Event()
     video_sync = Event()
@@ -149,7 +34,7 @@ def main(argc, argv) -> int:
     audio_thread = Thread(
         name="Thread-Audio",
         target=play_audio_thread,
-        args=(filepath,),
+        args=(opt.filepath,),
         kwargs={
             "sync": video_sync,
             "ready": audio_sync,
@@ -160,12 +45,12 @@ def main(argc, argv) -> int:
     try:
         audio_thread.start()
         play_video(
-            filepath,
-            origin_x=origin_x,
-            origin_y=origin_y,
-            width=width,
-            height=height,
-            pixel_width=pixel_width,
+            opt.filepath,
+            origin_x=opt.origin.x,
+            origin_y=opt.origin.y,
+            width=opt.res.width,
+            height=opt.res.height,
+            pixel_width=opt.res.pixel_width,
             sync=audio_sync,
             ready=video_sync,
             abort=abort
@@ -173,21 +58,38 @@ def main(argc, argv) -> int:
     finally:
         abort.set()
         audio_thread.join()
-    return 0
 
 def term_clear():
     term.reset_background_color()
     term.clear_all()
     term.set_cursor(1, 1)
 
-if __name__ == "__main__":
+def main(argc, argv) -> int:
+    arg_parser = argparse.ArgumentParser(
+        prog=argv[0],
+        description="A Video Player for the Terminal.",
+        allow_abbrev=False,
+    )
+
+    arg_parser.add_argument("filepath", help="the video file to open")
+    arg_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
+    arg_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin")
+    arg_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: False)")
+    opt = arg_parser.parse_args(argv[1:], namespace=argparse.Namespace())
+
+    if not path.exists(opt.filepath):
+        arg_parser.print_help()
+        print(f"No file '{opt.filepath}' found.")
+        return 1
+
+    term_clear()
     try:
-        if main(len(argv), argv) == 0:
-            term_clear()
-        else:
-            print_usage(argv[0])
+        play_file(opt)
     except KeyboardInterrupt:
         term_clear()
-    except Exception:
-        term_clear()
+    except:
         raise
+    return 0
+
+if __name__ == "__main__":
+    main(len(argv), argv)
