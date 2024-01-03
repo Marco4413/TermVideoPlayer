@@ -1,6 +1,25 @@
 import argparse
-    
-def width_spec_type(width_spec, *, width=None, pixel_width=None):
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class Resolution:
+    width: Optional[int]
+    pixel_width: Optional[int]
+    height: Optional[int]
+
+    def __str__(self):
+        res = ""
+        if self.width is not None:
+            res += str(self.width)
+        if self.pixel_width is not None:
+            res += f":{self.pixel_width}"
+        res += "x"
+        if self.height is not None:
+            res += str(self.height)
+        return res
+
+def width_spec_type(width_spec, *, width=None, pixel_width=None) -> Resolution:
     width_comp = width_spec.split(":")
     width_s = width_comp[0]
     pixel_width_s = ""
@@ -24,9 +43,9 @@ def width_spec_type(width_spec, *, width=None, pixel_width=None):
         if pixel_width < 1:
             raise ValueError("Pixel width can't be < 1.")
 
-    return argparse.Namespace(width=width, pixel_width=pixel_width)
+    return Resolution(width, pixel_width, None)
 
-def resolution(res, *, width=None, pixel_width=2, height=None):
+def resolution(res, *, width=None, pixel_width=2, height=None) -> Resolution:
     res_comp = res.split("x")
     if len(res_comp) != 2:
         raise ValueError(f"Invalid resolution: '{res}'")
@@ -40,19 +59,33 @@ def resolution(res, *, width=None, pixel_width=2, height=None):
         except ValueError:
             raise ValueError(f"Invalid height value: '{height_s}'")
 
-    setattr(value, "height", height)
+    value.height = height
     return value
 
 def get_resolution_format():
     return "[[width][:[pixel_width]]]x[height]"
 
-def position(pos, *, x=1, y=1):
+@dataclass
+class Position:
+    x: Optional[int]
+    y: Optional[int]
+
+    def __str__(self):
+        res = ""
+        if self.x is not None:
+            res += str(self.x)
+        res += "p"
+        if self.y is not None:
+            res += str(self.y)
+        return res
+
+def position(pos, *, x=1, y=1) -> Position:
     pos_comp = pos.split("p")
     if len(pos_comp) != 2:
         raise ValueError(f"Invalid position: '{pos}'")
     [x_s, y_s] = pos_comp
     
-    value = argparse.Namespace(x=x, y=y)
+    value = Position(x, y)
     if len(x_s) > 0:
         try:
             value.x = int(x_s)

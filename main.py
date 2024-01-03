@@ -96,7 +96,7 @@ def main(argc, argv) -> int:
     play_parser = arg_subparsers.add_parser("play", help="plays the specified file", description="Plays the specified file.")
     play_parser.add_argument("filepath", help="the video file to play")
     play_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
-    play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=argparse.Namespace(x=1,y=1), help=f"the video playback origin (default 1p1)")
+    play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=args.Position(1,1), help=f"the video playback origin (default %(default)s)")
     play_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: %(default)s)")
     play_parser.add_argument("-ad", "--audio-device", type=int, metavar="DEVICE_INDEX", help=f"selects the audio playback device (use `{arg_parser.prog} list-audio` to print output devices)")
     play_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: %(default)s)")
@@ -112,7 +112,7 @@ def main(argc, argv) -> int:
         description="Prints all available output devices."
     ).set_defaults(command="print-audio")
 
-    opt = arg_parser.parse_args(argv[1:], namespace=argparse.Namespace())
+    opt = arg_parser.parse_args(argv[1:])
     if opt.command == "print-audio":
         print_audio_output_devices()
         return 0
