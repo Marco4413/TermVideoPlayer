@@ -83,7 +83,7 @@ def print_audio_output_devices():
             print(f"{device['index']}{' (default) ' if is_default else ' '}- {device['name']}")
     pya.terminate()
 
-def main(argc, argv) -> int:
+def main(argc, argv):
     arg_parser = argparse.ArgumentParser(
         prog=argv[0],
         description="A Video Player for the Terminal.",
@@ -115,7 +115,7 @@ def main(argc, argv) -> int:
     opt = arg_parser.parse_args(argv[1:])
     if opt.command == "print-audio":
         print_audio_output_devices()
-        return 0
+        return
 
     av.logging.set_level(getattr(av.logging, opt.av_log_level))
 
@@ -143,7 +143,6 @@ def main(argc, argv) -> int:
         raise
     finally:
         term_clear()
-    return 0
 
 if __name__ == "__main__":
     main(len(argv), argv)
