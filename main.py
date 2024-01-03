@@ -103,7 +103,7 @@ def main(argc, argv) -> int:
     play_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: %(default)s)")
     play_parser.add_argument("-l", "--loop", type=int, metavar="N", default=1, help="plays the file N times. if N < 1 loops indefinitely (default: %(default)s)")
     play_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: %(default)s)")
-    play_parser.add_argument("--log-level", choices=av_log_levels, default="ERROR", help="av log level (default: %(default)s)")
+    play_parser.add_argument("--av-log-level", choices=av_log_levels, default="ERROR", help="sets av's log level (default: %(default)s)")
     play_parser.set_defaults(command="play")
 
     arg_subparsers.add_parser(
@@ -117,7 +117,7 @@ def main(argc, argv) -> int:
         print_audio_output_devices()
         return 0
 
-    av.logging.set_level(getattr(av.logging, opt.log_level))
+    av.logging.set_level(getattr(av.logging, opt.av_log_level))
 
     if not path.exists(opt.filepath):
         arg_parser.print_help()
