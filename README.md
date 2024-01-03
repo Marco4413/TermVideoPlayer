@@ -19,13 +19,13 @@ Usage is explained within the help prompts.
 ### Examples
 
 Open `video.mp4`, set pixel width to 2 chars, and video height to 64 chars (keep aspect-ratio):
-- `$ python main.py video.mp4 :2x64`
+- `$ python main.py play video.mp4 :2x64`
 
 Open `video.mp4`, set video width to 10 chars (keep aspect-ratio):
-- `$ python main.py video.mp4 10x`
+- `$ python main.py play video.mp4 10x`
 
 Open `video.mp4`, set video height to 10 chars (keep aspect-ratio), set origin to (6,3) and disable audio:
-- `$ python main.py video.mp4 x10 -o6p3 --no-audio`
+- `$ python main.py play video.mp4 x10 -o6p3 --no-audio`
 
 ## The audio stops playing
 
