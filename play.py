@@ -106,6 +106,11 @@ def write_image(image: Image, origin_x: int, origin_y: int, pixel_ch: str, *, ou
 
     # Render in a single write to out
     out.write(screen.getvalue())
+    out.flush() # Flush otherwise out can ignore the frame
+    # I think that stdout auto-flushes after a certain amount of characters are written to it,
+    #  so we still need an internal buffer to send the whole thing in one call.
+    # Maybe flushing out should be the job of `play_video`, since `write` on buffers should not flush.
+    # However, I'll keep it like that for now. Maybe add a new kwarg to `write_image` like `flush=False`?
 
 def play_video(
     filepath: str, *,
