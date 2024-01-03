@@ -101,7 +101,7 @@ def main(argc, argv) -> int:
     play_parser.add_argument("-ad", "--audio-device", type=int, metavar="DEVICE_INDEX", help=f"selects the audio playback device (use `{arg_parser.prog} list-audio` to print output devices)")
     play_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: %(default)s)")
     play_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: %(default)s)")
-    play_parser.add_argument("-l", "--loop", type=int, metavar="N", default=0, help="loops N times. if N < 0 loops indefinitely (default: %(default)s)")
+    play_parser.add_argument("-l", "--loop", type=int, metavar="N", default=1, help="plays the file N times. if N < 1 loops indefinitely (default: %(default)s)")
     play_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: %(default)s)")
     play_parser.add_argument("--log-level", choices=av_log_levels, default="ERROR", help="av log level (default: %(default)s)")
     play_parser.set_defaults(command="play")
@@ -126,13 +126,21 @@ def main(argc, argv) -> int:
 
     term_clear()
     try:
-        play_file(opt) # Play once at start
-        while opt.loop != 0:
-            # If any loop is needed, loop
-            opt.loop -= 1
+        while True:
+            play_file(opt)
+            if opt.loop == 1:
+                break
+            opt.loop -= 1 # Can't wait for the number to underflow!
+            # If int is a 64 bit number and loop=0, it would take 18446744073709551616 iterations to get back to 1 (which breaks the loop)
+            # At 60 FPS it's roughly
+            #   295147905179352825856 milliseconds
+            # = 295147905179352826 seconds
+            # = 81985529216487 hours
+            # = 3416063717354 days
+            # which is like 9359078678 years (twice the age of Earth as of 2024). We don't need to worry about this.
+            # I have used https://www.wolframalpha.com as a calculator
             if opt.loop_wait > 0:
                 sleep(opt.loop_wait)
-            play_file(opt)
         if opt.block: input()
     except KeyboardInterrupt:
         pass
