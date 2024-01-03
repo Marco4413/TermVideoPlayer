@@ -3,7 +3,6 @@ import term
 from play import play_audio, play_video
 
 import argparse
-from os import path
 from threading import Thread, Event
 from time import sleep
 from sys import argv, stdout
