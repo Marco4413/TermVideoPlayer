@@ -103,6 +103,7 @@ def main(argc, argv):
     play_parser.add_argument("-l", "--loop", type=int, metavar="N", default=1, help="plays the file N times. if N < 1 loops indefinitely (default: %(default)s)")
     play_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: %(default)s)")
     play_parser.add_argument("--av-log-level", choices=av_log_levels, default="ERROR", help="sets av's log level (default: %(default)s)")
+    play_parser.add_argument("--av-error-show-stacktrace", action="store_true", help="raises any av error again to show stacktrace (default: %(default)s)")
     play_parser.set_defaults(command="play")
 
     arg_subparsers.add_parser(
@@ -136,12 +137,17 @@ def main(argc, argv):
             if opt.loop_wait > 0:
                 sleep(opt.loop_wait)
         if opt.block: input()
-    except KeyboardInterrupt:
-        pass
-    except:
-        raise
-    finally:
         term_clear()
+    except av.error.FFmpegError as av_error:
+        term_clear()
+        if opt.av_error_show_stacktrace:
+            raise
+        print(av_error)
+    except KeyboardInterrupt:
+        term_clear()
+    except:
+        term_clear()
+        raise
 
 if __name__ == "__main__":
     main(len(argv), argv)
