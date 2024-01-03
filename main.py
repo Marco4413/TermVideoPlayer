@@ -119,11 +119,6 @@ def main(argc, argv) -> int:
 
     av.logging.set_level(getattr(av.logging, opt.av_log_level))
 
-    if not path.exists(opt.filepath):
-        arg_parser.print_help()
-        print(f"No file '{opt.filepath}' found.")
-        return 1
-
     term_clear()
     try:
         while True:
