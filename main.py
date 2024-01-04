@@ -24,16 +24,20 @@ def play_audio_thread(*args, ready: Event, abort: Event, **kwargs):
     finally:
         ready.set()
 
-def play_file(opt: argparse.Namespace, *, pyaudio: Optional[PyAudio] = None):
-    # pyaudio can be provided to not create a new instance for each play_audio call
-    if opt.no_audio:
+def play_file(
+    filepath: str, origin: args.Position, res: args.Resolution, *,
+    volume: float = 1.0,
+    audio_device: Optional[int] = None,
+    pyaudio: Optional[PyAudio] = None
+    ):
+    if pyaudio is None:
         play_video(
-            opt.filepath,
-            origin_x=opt.origin.x,
-            origin_y=opt.origin.y,
-            width=opt.res.width,
-            height=opt.res.height,
-            pixel_width=opt.res.pixel_width
+            filepath,
+            origin_x=origin.x,
+            origin_y=origin.y,
+            width=res.width,
+            height=res.height,
+            pixel_width=res.pixel_width
         )
         return
 
@@ -44,10 +48,10 @@ def play_file(opt: argparse.Namespace, *, pyaudio: Optional[PyAudio] = None):
     audio_thread = Thread(
         name="Thread-Audio",
         target=play_audio_thread,
-        args=(opt.filepath,),
+        args=(filepath,),
         kwargs={
-            "volume": opt.volume,
-            "output_device": opt.audio_device,
+            "volume": volume,
+            "output_device": audio_device,
             "sync": video_sync,
             "ready": audio_sync,
             "abort": abort
@@ -57,12 +61,12 @@ def play_file(opt: argparse.Namespace, *, pyaudio: Optional[PyAudio] = None):
     try:
         audio_thread.start()
         play_video(
-            opt.filepath,
-            origin_x=opt.origin.x,
-            origin_y=opt.origin.y,
-            width=opt.res.width,
-            height=opt.res.height,
-            pixel_width=opt.res.pixel_width,
+            filepath,
+            origin_x=origin.x,
+            origin_y=origin.y,
+            width=res.width,
+            height=res.height,
+            pixel_width=res.pixel_width,
             sync=audio_sync,
             ready=video_sync,
             abort=abort
@@ -134,7 +138,7 @@ def main(argc, argv):
     term_clear()
     try:
         while True:
-            play_file(opt, pyaudio=pya)
+            play_file(opt.filepath, opt.origin, opt.res, volume=opt.volume, audio_device=opt.audio_device, pyaudio=pya)
             if opt.loop == 1:
                 break
             opt.loop -= 1 # Can't wait for the number to underflow!
