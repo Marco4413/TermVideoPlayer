@@ -7,10 +7,11 @@ from play import play_audio, play_video
 import argparse
 from threading import Thread, Event
 from time import sleep
+from typing import Optional
 from sys import argv, stdout
 
 import av
-import pyaudio
+from pyaudio import PyAudio
 
 def play_audio_thread(*args, ready: Event, abort: Event, **kwargs):
     try:
@@ -23,7 +24,8 @@ def play_audio_thread(*args, ready: Event, abort: Event, **kwargs):
     finally:
         ready.set()
 
-def play_file(opt: argparse.Namespace):
+def play_file(opt: argparse.Namespace, *, pyaudio: Optional[PyAudio] = None):
+    # pyaudio can be provided to not create a new instance for each play_audio call
     if opt.no_audio:
         play_video(
             opt.filepath,
@@ -75,7 +77,7 @@ def term_clear():
     term.set_cursor(1, 1)
 
 def print_audio_output_devices():
-    pya = pyaudio.PyAudio()
+    pya = PyAudio()
     default_output_device = pya.get_default_output_device_info()
     for i in range(pya.get_device_count()):
         device = pya.get_device_info_by_index(i)
@@ -125,10 +127,14 @@ def main(argc, argv):
 
     av.logging.set_level(getattr(av.logging, opt.av_log_level))
 
+    pya: Optional[PyAudio] = None
+    if not opt.no_audio:
+        pya = PyAudio()
+
     term_clear()
     try:
         while True:
-            play_file(opt)
+            play_file(opt, pyaudio=pya)
             if opt.loop == 1:
                 break
             opt.loop -= 1 # Can't wait for the number to underflow!
@@ -154,6 +160,9 @@ def main(argc, argv):
     except:
         term_clear()
         raise
+    finally:
+        if pya is not None:
+            pya.terminate()
 
 if __name__ == "__main__":
     main(len(argv), argv.copy())
