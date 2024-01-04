@@ -5,6 +5,7 @@ import term
 from play import play_audio, play_video
 
 import argparse
+from queue import Queue
 from threading import Thread, Event
 from time import sleep
 from typing import Optional
@@ -13,13 +14,16 @@ from sys import argv, stdout
 import av
 from pyaudio import PyAudio
 
-def play_audio_thread(*args, ready: Event, abort: Event, **kwargs):
+def play_audio_thread(*args, ready: Event, abort: Event, error_queue: Queue, **kwargs):
     try:
         play_audio(*args, ready=ready, abort=abort, **kwargs)
     except IndexError:
         # No Audio
         pass
-    except:
+    except Exception as error:
+        abort.set()
+        error_queue.put(error)
+    except error: # Just to be sure that we catch everything
         abort.set()
     finally:
         ready.set()
@@ -45,6 +49,7 @@ def play_file(
     video_sync = Event()
     abort = Event()
 
+    audio_error_queue = Queue(1)
     audio_thread = Thread(
         name="Thread-Audio",
         target=play_audio_thread,
@@ -54,7 +59,8 @@ def play_file(
             "output_device": audio_device,
             "sync": video_sync,
             "ready": audio_sync,
-            "abort": abort
+            "abort": abort,
+            "error_queue": audio_error_queue,
         }
     )
 
@@ -74,6 +80,9 @@ def play_file(
     finally:
         abort.set()
         audio_thread.join()
+
+    if not audio_error_queue.empty():
+        raise audio_error_queue.get(block=False)
 
 def term_clear():
     term.reset_background_color()
