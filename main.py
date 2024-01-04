@@ -1,3 +1,5 @@
+#!/bin/python3
+
 import args
 import term
 from play import play_audio, play_video
