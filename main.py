@@ -112,8 +112,8 @@ def main(argc, argv):
 
     arg_subparsers.add_parser(
         "print-audio",
-        help="prints all available output devices",
-        description="Prints all available output devices."
+        help="prints all available output devices and PyAudio's log",
+        description="Prints all available output devices and PyAudio's log."
     ).set_defaults(command="print-audio")
 
     if len(argv) == 0:
