@@ -28,6 +28,7 @@ def play_audio(
     filepath: str, *,
     volume: float = 1.0,
     output_device: Optional[int] = None,
+    pyaudio: Optional[PyAudio] = None,
     sync: Optional[Union[Event, Barrier]] = None,
     ready: Optional[Event] = None,
     abort: Event = Event(),
@@ -55,7 +56,7 @@ def play_audio(
             rate=first_frame.rate,
         )
 
-        pya = PyAudio()
+        pya = pyaudio or PyAudio()
         try:
             # Sync with other threads
             if ready is not None:
@@ -87,7 +88,9 @@ def play_audio(
             pya_stream.stop_stream()
             pya_stream.close()
         finally:
-            pya.terminate()
+            if pyaudio is None:
+                # Terminate pya only if we're the ones who created it
+                pya.terminate()
 
 def write_image(image: Image, origin_x: int, origin_y: int, pixel_ch: str, *, out: TextIO = stdout):
     last_bg = None
