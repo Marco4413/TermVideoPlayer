@@ -86,7 +86,7 @@ def print_audio_output_devices():
 
 def main(argc, argv):
     arg_parser = argparse.ArgumentParser(
-        prog=argv[0],
+        prog=argv.pop(0),
         description="A Video Player for the Terminal.",
         allow_abbrev=False,
     )
@@ -114,7 +114,11 @@ def main(argc, argv):
         description="Prints all available output devices."
     ).set_defaults(command="print-audio")
 
-    opt = arg_parser.parse_args(argv[1:])
+    if len(argv) == 0:
+        arg_parser.print_help()
+        return
+
+    opt = arg_parser.parse_args(argv)
     if opt.command == "print-audio":
         print_audio_output_devices()
         return
@@ -152,4 +156,4 @@ def main(argc, argv):
         raise
 
 if __name__ == "__main__":
-    main(len(argv), argv)
+    main(len(argv), argv.copy())
