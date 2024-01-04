@@ -1,0 +1,5 @@
+# Set default behavior to automatically normalize line endings.
+* text=auto
+# Force .py files to have \n as eol.
+# This is needed for WSL to pick up the python interpreter in main.py
+*.py text eol=lf
