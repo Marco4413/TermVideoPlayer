@@ -33,9 +33,9 @@ Open `video.mp4`, set video height to 10 chars (keep aspect-ratio), set origin t
 
 On Linux it's possible to run multiple background instances of the program to achieve tiling:
 ```sh
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o0p0   &
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p0  &
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o0p21  &
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o1p1   &
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p1  &
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o1p21  &
 ./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p21
 ```
 
@@ -47,6 +47,8 @@ Its format is the same as the resolution, if pixel_width is not specified, it is
 Other options such as `-l0` and `-lw 1` are there just to refresh the image. Otherwise, the image would only be displayed once (it's a single-frame video).
 
 ![Tiling Example Image](tiling.png)
+
+This works because all commands are batched and written to stdout in a single `stdout.write` call.
 
 ## The audio stops playing
 
