@@ -27,6 +27,27 @@ Open `video.mp4`, set video width to 10 chars (keep aspect-ratio):
 Open `video.mp4`, set video height to 10 chars (keep aspect-ratio), set origin to (6,3) and disable audio:
 - `$ python main.py play video.mp4 x10 -o6p3 --no-audio`
 
+## Features
+
+### Tiling
+
+On Linux it's possible to run multiple background instances of the program to achieve tiling:
+```sh
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o0p0   &
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p0  &
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o0p21  &
+./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p21
+```
+
+Here the `-C` (`--align-center`) option aligns the image to the center of its bounding box.
+
+While the `-B` (`--bounding-box`) option specifies the max width and height of the image.
+Its format is the same as the resolution, if pixel_width is not specified, it is the same as the one provided within the resolution argument.
+
+Other options such as `-l0` and `-lw 1` are there just to refresh the image. Otherwise, the image would only be displayed once (it's a single-frame video).
+
+![Tiling Example Image](tiling.png)
+
 ## The audio stops playing
 
 If it stops playing, it means that it couldn't be processed fast enough.
