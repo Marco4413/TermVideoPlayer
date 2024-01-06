@@ -1,5 +1,6 @@
 import term
 
+from args import Resolution
 import array
 from io import StringIO
 from queue import Queue
@@ -121,6 +122,8 @@ def play_video(
     origin_y: int = 1,
     width: Optional[int] = None, height: Optional[int] = None,
     pixel_width: int = 2,
+    bounding_box: Resolution = Resolution(None, 2, None),
+    align_center: bool = False,
     out: TextIO = stdout,
     sync: Optional[Union[Event, Barrier]] = None,
     ready: Optional[Event] = None,
@@ -131,19 +134,38 @@ def play_video(
         video_generator = container.decode(video=0)
         first_frame = next(video_generator)
         
-        aspect_ratio = first_frame.width / first_frame.height
+        frame_aspect_ratio = first_frame.width / first_frame.height
         if width is None and height is None:
             width = first_frame.width
             height = first_frame.height
         elif width is None:
-            width = int(height * aspect_ratio)
+            width = int(height * frame_aspect_ratio)
         elif height is None:
+            height = int(width / frame_aspect_ratio)
+        
+        # Keep the frame within its bounding_box
+        bb_pixel_width = bounding_box.pixel_width or pixel_width
+        aspect_ratio = width / height
+        if bounding_box.width is not None and (width*pixel_width) > (bounding_box.width*bb_pixel_width):
+            width = bounding_box.width*bb_pixel_width//pixel_width
             height = int(width / aspect_ratio)
+        if bounding_box.height is not None and height > bounding_box.height:
+            height = bounding_box.height
+            width = int(height * aspect_ratio)
+
+        # Offset the frame if align_center
+        off_x = 0
+        off_y = 0
+        if align_center:
+            if bounding_box.width is not None:
+                off_x = ((bounding_box.width*bb_pixel_width) - (width*pixel_width)) // 2
+            if bounding_box.height is not None:
+                off_y = (bounding_box.height - height) // 2
 
         # Print first frame (required to display images)
         write_image(
             first_frame.to_image(width=width, height=height), 
-            origin_x, origin_y, pixel_ch, out=out
+            origin_x+off_x, origin_y+off_y, pixel_ch, out=out
         )
 
         if ready is not None:
@@ -166,4 +188,4 @@ def play_video(
 
             # Write the current frame
             image: Image = frame.to_image(width=width, height=height)
-            write_image(image, origin_x, origin_y, pixel_ch, out=out)
+            write_image(image, origin_x+off_x, origin_y+off_y, pixel_ch, out=out)

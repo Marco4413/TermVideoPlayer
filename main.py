@@ -32,7 +32,9 @@ def play_file(
     filepath: str, origin: args.Position, res: args.Resolution, *,
     volume: float = 1.0,
     audio_device: Optional[int] = None,
-    pyaudio: Optional[PyAudio] = None
+    pyaudio: Optional[PyAudio] = None,
+    bounding_box: args.Resolution = args.Resolution(None, None, None),
+    align_center: bool = False
     ):
     if pyaudio is None:
         play_video(
@@ -41,7 +43,9 @@ def play_file(
             origin_y=origin.y,
             width=res.width,
             height=res.height,
-            pixel_width=res.pixel_width
+            pixel_width=res.pixel_width,
+            bounding_box=bounding_box,
+            align_center=align_center
         )
         return
 
@@ -73,6 +77,8 @@ def play_file(
             width=res.width,
             height=res.height,
             pixel_width=res.pixel_width,
+            bounding_box=bounding_box,
+            align_center=align_center,
             sync=audio_sync,
             ready=video_sync,
             abort=abort
@@ -112,7 +118,9 @@ def main(argc, argv):
     play_parser = arg_subparsers.add_parser("play", help="plays the specified file", description="Plays the specified file.")
     play_parser.add_argument("filepath", help="the video file to play")
     play_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
-    play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=args.Position(1,1), help=f"the video playback origin (default %(default)s)")
+    play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=args.Position(1,1), help="the video playback origin (default: %(default)s)")
+    play_parser.add_argument("-C", "--align-center", action="store_true", help="center-aligns the video within its bounding-box. see the --bounding-box option (default: %(default)s)")
+    play_parser.add_argument("-B", "--bounding-box", type=args.resolution, metavar=args.get_resolution_format(), default=args.Resolution(None, None, None), help="sets the max size in chars for each provided axis (default: %(default)s)")
     play_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: %(default)s)")
     play_parser.add_argument("-ad", "--audio-device", type=int, metavar="DEVICE_INDEX", help=f"selects the audio playback device (use `{arg_parser.prog} list-audio` to print output devices)")
     play_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: %(default)s)")
@@ -138,6 +146,9 @@ def main(argc, argv):
         print_audio_output_devices()
         return
 
+    # Set pixel_width to 2 if not provided
+    opt.res.pixel_width = opt.res.pixel_width or 2
+
     av.logging.set_level(getattr(av.logging, opt.av_log_level))
 
     pya: Optional[PyAudio] = None
@@ -147,7 +158,11 @@ def main(argc, argv):
     term_clear()
     try:
         while True:
-            play_file(opt.filepath, opt.origin, opt.res, volume=opt.volume, audio_device=opt.audio_device, pyaudio=pya)
+            play_file(
+                opt.filepath, opt.origin, opt.res,
+                volume=opt.volume, audio_device=opt.audio_device, pyaudio=pya,
+                bounding_box=opt.bounding_box, align_center=opt.align_center
+            )
             if opt.loop == 1:
                 break
             opt.loop -= 1 # Can't wait for the number to underflow!
