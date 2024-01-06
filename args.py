@@ -45,7 +45,7 @@ def width_spec_type(width_spec, *, width=None, pixel_width=None) -> Resolution:
 
     return Resolution(width, pixel_width, None)
 
-def resolution(res, *, width=None, pixel_width=2, height=None) -> Resolution:
+def resolution(res, *, width=None, pixel_width=None, height=None) -> Resolution:
     res_comp = res.split("x")
     if len(res_comp) != 2:
         raise ValueError(f"Invalid resolution: '{res}'")
