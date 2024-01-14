@@ -8,6 +8,7 @@ import argparse
 import platform
 
 from glob import iglob
+from random import shuffle
 from queue import Queue
 from threading import Thread, Event
 from time import sleep
@@ -152,6 +153,7 @@ def main(argc, argv):
     play_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: %(default)s)")
     play_parser.add_argument("-l", "--loop", type=int, metavar="N", default=1, help="plays the file N times. if N < 1 loops indefinitely (default: %(default)s)")
     play_parser.add_argument("-lw", "--loop-wait", type=float, metavar="secs", default=0, help="delay between loops (default: %(default)s)")
+    play_parser.add_argument("-s", "--shuffle", action="store_true", help="shuffles playlist at the start of each loop (default: %(default)s)")
     play_parser.add_argument("--av-log-level", choices=av_log_levels, default="ERROR", help="sets av's log level (default: %(default)s)")
     play_parser.add_argument("--av-error-show-stacktrace", action="store_true", help="raises any av error again to show stacktrace (default: %(default)s)")
     play_parser.set_defaults(command="play")
@@ -193,6 +195,8 @@ def main(argc, argv):
 
     try:
         while True:
+            if opt.shuffle:
+                shuffle(files)
             for path in files:
                 play_file(
                     path, opt.origin, opt.res,
