@@ -140,7 +140,7 @@ def main(argc, argv):
     arg_subparsers = arg_parser.add_subparsers(required=True)
 
     av_log_levels = [ "PANIC", "FATAL", "ERROR", "WARNING", "INFO", "VERBOSE", "DEBUG" ]
-    play_parser = arg_subparsers.add_parser("play", help="plays the specified file", description="Plays the specified file.")
+    play_parser = arg_subparsers.add_parser("play", help="plays the specified file. multiple files are treated as a playlist", description="Plays the specified file. Multiple files are treated as a playlist.")
     play_parser.add_argument("file", help="the file to play. it can be an audio, image or video", nargs="+")
     play_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
     play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=args.Position(1,1), help="the video playback origin (default: %(default)s)")
