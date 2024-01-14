@@ -71,7 +71,7 @@ Both options are not needed when tiling videos.
 
 ![Tiling Example Image](tiling.png)
 
-This works because all commands are batched and written to stdout in a single `stdout.write` call.
+This also works with videos, because all ANSI commands are batched and written to stdout in a single `stdout.write` call.
 
 ## The audio stops playing
 
