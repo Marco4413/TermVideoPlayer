@@ -84,9 +84,29 @@ def play_file(
             ready=video_sync,
             abort=abort
         )
-    finally:
+    except IndexError:
+        # No Video
+        video_sync.set()
+    except:
+        # Generic exception
+        # Set video_sync to unlock audio thread
+        video_sync.set()
+        # Set abort to stop audio playback
         abort.set()
-        audio_thread.join()
+        raise
+    finally:
+        # Join audio_thread
+        try:
+            # abort is not set if there was no Video
+            #  so we need to wait for audio to end
+            while audio_thread.is_alive():
+                audio_thread.join(1)
+                # Using a while loop to catch interrupts
+        except:
+            # Catch any interrupt or error and abort
+            abort.set()
+            audio_thread.join()
+            raise
 
     if not audio_error_queue.empty():
         raise audio_error_queue.get(block=False)
