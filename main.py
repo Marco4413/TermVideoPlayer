@@ -122,6 +122,7 @@ def main(argc, argv):
     play_parser.add_argument("-C", "--align-center", action="store_true", help="center-aligns the video within its bounding-box. see the --bounding-box option (default: %(default)s)")
     play_parser.add_argument("-B", "--bounding-box", type=args.resolution, metavar=args.get_resolution_format(), default=args.Resolution(None, None, None), help="sets the max size in chars for each provided axis (default: %(default)s)")
     play_parser.add_argument("-na", "--no-audio", action="store_true", help="disable audio playback (default: %(default)s)")
+    play_parser.add_argument("-nc", "--no-clear", action="store_true", help="disables term clearing (default: %(default)s)")
     play_parser.add_argument("-ad", "--audio-device", type=int, metavar="DEVICE_INDEX", help=f"selects the audio playback device (use `{arg_parser.prog} list-audio` to print output devices)")
     play_parser.add_argument("-v", "--volume", type=float, default=1.0, help="sets audio volume (default: %(default)s)")
     play_parser.add_argument("-b", "--block", action="store_true", help="waits for input at the end of playback (default: %(default)s)")
@@ -155,7 +156,9 @@ def main(argc, argv):
     if not opt.no_audio:
         pya = PyAudio()
 
-    term_clear()
+    please_clear_if_allowed = lambda: (None if opt.no_clear else term_clear())
+    please_clear_if_allowed()
+
     try:
         while True:
             play_file(
@@ -177,16 +180,16 @@ def main(argc, argv):
             if opt.loop_wait > 0:
                 sleep(opt.loop_wait)
         if opt.block: input()
-        term_clear()
+        please_clear_if_allowed()
     except av.error.FFmpegError as av_error:
-        term_clear()
+        please_clear_if_allowed()
         if opt.av_error_show_stacktrace:
             raise
         print(av_error)
     except KeyboardInterrupt:
-        term_clear()
+        please_clear_if_allowed()
     except:
-        term_clear()
+        please_clear_if_allowed()
         raise
     finally:
         if pya is not None:
