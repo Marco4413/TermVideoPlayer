@@ -156,7 +156,7 @@ def main(argc, argv):
     if not opt.no_audio:
         pya = PyAudio()
 
-    please_clear_if_allowed = lambda: (None if opt.no_clear else term_clear())
+    please_clear_if_allowed = lambda: (term.next_line() if opt.no_clear else term_clear())
     please_clear_if_allowed()
 
     try:
