@@ -34,7 +34,7 @@ def play_audio(
     ready: Optional[Event] = None,
     abort: Event = Event(),
     ):
-    with av.open(filepath, mode="r") as container:
+    with av.open(filepath, mode="r", timeout=5) as container:
         audio_fifo = av.AudioFifo()
         def audio_callback(in_data, frame_count, time_info, status):
             if abort.is_set() or status != 0:
@@ -130,7 +130,7 @@ def play_video(
     abort: Event = Event()
     ):
     pixel_ch = " " * pixel_width
-    with av.open(filepath, mode="r") as container:
+    with av.open(filepath, mode="r", timeout=5) as container:
         video_generator = container.decode(video=0)
         first_frame = next(video_generator)
         
