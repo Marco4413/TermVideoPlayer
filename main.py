@@ -61,6 +61,7 @@ def play_file(
         kwargs={
             "volume": volume,
             "output_device": audio_device,
+            "pyaudio": pyaudio,
             "sync": video_sync,
             "ready": audio_sync,
             "abort": abort,
