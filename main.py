@@ -5,6 +5,9 @@ import term
 from play import play_audio, play_video
 
 import argparse
+import platform
+
+from glob import iglob
 from queue import Queue
 from threading import Thread, Event
 from time import sleep
@@ -137,7 +140,7 @@ def main(argc, argv):
 
     av_log_levels = [ "PANIC", "FATAL", "ERROR", "WARNING", "INFO", "VERBOSE", "DEBUG" ]
     play_parser = arg_subparsers.add_parser("play", help="plays the specified file", description="Plays the specified file.")
-    play_parser.add_argument("filepath", help="the video file to play")
+    play_parser.add_argument("file", help="the file to play. it can be an audio, image or video", nargs="+")
     play_parser.add_argument("res", type=args.resolution, metavar=args.get_resolution_format(), help="the video resolution")
     play_parser.add_argument("-o", "--origin", type=args.position, metavar=args.get_position_format(), default=args.Position(1,1), help="the video playback origin (default: %(default)s)")
     play_parser.add_argument("-C", "--align-center", action="store_true", help="center-aligns the video within its bounding-box. see the --bounding-box option (default: %(default)s)")
@@ -180,13 +183,22 @@ def main(argc, argv):
     please_clear_if_allowed = lambda: (term.next_line() if opt.no_clear else term_clear())
     please_clear_if_allowed()
 
+    files = []
+    if platform.system() in ["Windows"]:
+        for path in opt.file:
+            for file in iglob(path, recursive=True):
+                files.append(file)
+    else:
+        files = opt.file
+
     try:
         while True:
-            play_file(
-                opt.filepath, opt.origin, opt.res,
-                volume=opt.volume, audio_device=opt.audio_device, pyaudio=pya,
-                bounding_box=opt.bounding_box, align_center=opt.align_center
-            )
+            for path in files:
+                play_file(
+                    path, opt.origin, opt.res,
+                    volume=opt.volume, audio_device=opt.audio_device, pyaudio=pya,
+                    bounding_box=opt.bounding_box, align_center=opt.align_center
+                )
             if opt.loop == 1:
                 break
             opt.loop -= 1 # Can't wait for the number to underflow!
