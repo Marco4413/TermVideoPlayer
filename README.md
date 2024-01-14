@@ -31,12 +31,31 @@ Open `video.mp4`, set video height to 10 chars (keep aspect-ratio), set origin t
 
 ### Tiling
 
-On Linux it's possible to run multiple background instances of the program to achieve tiling:
+**Note:** These examples show how to achieve tiling of images.
+It can also be done with videos if your terminal supports running multiple commands in the background.
+
+**Linux:**
 ```sh
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o1p1   &
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p1  &
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o1p21  &
-./main.py play image.jpg 20x -l0 -lw 1 -CB 20x20 -o41p21
+#!/bin/sh
+./main.py play image.jpg 20x -nc -na -CB 20x20 -o1p1
+./main.py play image.jpg 20x -nc -na -CB 20x20 -o41p1
+./main.py play image.jpg 20x -nc -na -CB 20x20 -o1p21
+./main.py play image.jpg 20x -nc -na -CB 20x20 -o41p21
+
+# On Linux it's possible to easily tile videos by
+#  putting "&" at the end of each play command (running them async),
+#  and "wait" after all commands (joining them at the end).
+# Just remember to remove the "-nc" and "-na" options.
+# See below for more info on "-nc" and "-na".
+```
+
+**Windows:**
+```bat
+@echo off
+python main.py play image.jpg 20x -nc -na -CB 20x20 -o1p1
+python main.py play image.jpg 20x -nc -na -CB 20x20 -o41p1
+python main.py play image.jpg 20x -nc -na -CB 20x20 -o1p21
+python main.py play image.jpg 20x -nc -na -CB 20x20 -o41p21
 ```
 
 Here the `-C` (`--align-center`) option aligns the image to the center of its bounding box.
@@ -44,7 +63,11 @@ Here the `-C` (`--align-center`) option aligns the image to the center of its bo
 While the `-B` (`--bounding-box`) option specifies the max width and height of the image.
 Its format is the same as the resolution, if pixel_width is not specified, it is the same as the one provided within the resolution argument.
 
-Other options such as `-l0` and `-lw 1` are there just to refresh the image. Otherwise, the image would only be displayed once (it's a single-frame video).
+Other options such as `-nc` and `-na` are needed to, respectively, not clear the terminal, and disabling audio.
+Both options are not needed when tiling videos.
+
+**Note:** Audio does not really need to be disabled to display images. However, `portaudio`, for some reason, has logging enabled on Linux
+(which breaks tiling of images, videos are not affected since they refresh).
 
 ![Tiling Example Image](tiling.png)
 
